@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartExamTrainer.Application\SmartExamTrainer.Application.csproj" />
+    <ProjectReference Include="..\SmartExamTrainer.Persistence\SmartExamTrainer.Persistence.csproj" />
+    <ProjectReference Include="..\SmartExamTrainer.Shared\SmartExamTrainer.Shared.csproj" />
+    <ProjectReference Include="..\SmartExamTrainer.Domain\SmartExamTrainer.Domain.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" Version="9.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.16.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

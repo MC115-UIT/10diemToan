@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --font-garamond: var(--font-eb-garamond), Georgia, serif;
+  --font-playfair: var(--font-playfair), "Times New Roman", serif;
+  
+  --color-academic-paper: #F9F6F0;
+  --color-academic-ink: #1C2526;
+  --color-academic-accent: #5C3311;
+  --color-academic-light: #8B5A2B;
+  --color-academic-border: #D4C3A8;
+  --color-academic-success: #4A7043;
+  --color-academic-warning: #8B2E2E;
+  --color-academic-neutral: #6B6659;
+}
+
+body {
+  background-color: var(--color-academic-paper);
+  color: var(--color-academic-ink);
+  font-family: var(--font-garamond);
+  letter-spacing: 0.01em;
+  line-height: 1.8;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-playfair);
+  color: var(--color-academic-accent);
+}
+
+.academic-button {
+  font-family: var(--font-garamond);
+  padding: 0.875rem 2rem;
+  border: 2px solid var(--color-academic-accent);
+  color: var(--color-academic-accent);
+  background: transparent;
+  transition: all 0.3s ease;
+}
+
+.academic-button:hover:not(:disabled) {
+  background: var(--color-academic-accent);
+  color: white;
+  transform: translateY(-1px);
+}
