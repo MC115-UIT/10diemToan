@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
 import Link from "next/link";
-import { BookOpen, GraduationCap, Network, PenTool } from "lucide-react";
+import { BookOpen, GraduationCap, Network, PenTool, AlertTriangle } from "lucide-react";
 
 export default function LandingPage() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -120,7 +120,9 @@ export default function LandingPage() {
             </div>
 
             {/* Box 4 */}
-            <div className="border border-academic-border border-l-4 border-l-academic-warning p-8 bg-white relative group hover:bg-[#FDF2F2] transition-colors duration-500">
+            <div className="border border-academic-border border-l-4 border-l-academic-warning p-8 bg-[#FDFBF7] relative group hover:bg-[#FDF2F2] transition-colors duration-500">
+              <div className="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-academic-warning mt-4 mr-4 opacity-20"></div>
+              <AlertTriangle className="text-academic-warning mb-6" size={36} />
               <h3 className="text-2xl font-playfair font-bold text-academic-warning mb-3">IV. Bẫy Khái niệm & Rút kinh nghiệm</h3>
               <p className="text-lg text-academic-neutral leading-relaxed">Phân tích sai lầm phổ biến mà học sinh thường mắc phải. Hệ thống hóa lại điểm mấu chốt để ghi vào sổ tay.</p>
             </div>
