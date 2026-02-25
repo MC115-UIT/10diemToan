@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/useAuthStore";
-import api from "@/lib/api";
+import { UserService } from "@/services/UserService";
 
 export default function OnboardingPage() {
     const [step, setStep] = useState(1);
@@ -30,7 +30,7 @@ export default function OnboardingPage() {
         if (!grade || targetExams.length === 0 || !level) return;
         setIsSubmitting(true);
         try {
-            await api.post("/user/onboard", {
+            await UserService.onboardUser({
                 grade: Number(grade),
                 targetExams: targetExams.join(", "),
                 selfAssessmentLevel: Number(level)
