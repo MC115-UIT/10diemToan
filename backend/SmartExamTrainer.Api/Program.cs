@@ -8,8 +8,13 @@ using SmartExamTrainer.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using SmartExamTrainer.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Load .env files and add placeholder mapping
+builder.LoadEnvFiles();
+builder.Configuration.AddEnvPlaceholderMapping();
 
 // Configure Serilog
 Log.Logger = new LoggerConfiguration()
