@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using FluentResults;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SmartExamTrainer.Application.Interfaces.Auth;
 using SmartExamTrainer.Application.Interfaces.Repositories;
@@ -17,17 +18,20 @@ public class AuthService : IAuthService
     private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IConfiguration _configuration;
+    private readonly Microsoft.Extensions.Logging.ILogger<AuthService> _logger;
 
     public AuthService(
         IUserRepository userRepository, 
         IRefreshTokenRepository refreshTokenRepository,
         IUnitOfWork unitOfWork, 
-        IConfiguration configuration)
+        IConfiguration configuration,
+        Microsoft.Extensions.Logging.ILogger<AuthService> logger)
     {
         _userRepository = userRepository;
         _refreshTokenRepository = refreshTokenRepository;
         _unitOfWork = unitOfWork;
         _configuration = configuration;
+        _logger = logger;
     }
 
     public async Task<Result<AuthResultDto>> LoginAsync(string email, string password, string ipAddress, CancellationToken cancellationToken = default)
@@ -48,35 +52,45 @@ public class AuthService : IAuthService
         {
             AccessToken = token,
             RefreshToken = refreshToken.Token,
-            User = new UserDto { Id = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role, IsPremium = user.IsPremium }
+            User = new UserDto { Id = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role, IsPremium = user.IsPremium, IsOnboarded = user.IsOnboarded }
         });
     }
 
     public async Task<Result<AuthResultDto>> RegisterAsync(string email, string password, string fullName, string ipAddress, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("Starting RegisterAsync for {Email}", email);
         var existingUser = await _userRepository.GetByEmailAsync(email, cancellationToken);
+        _logger.LogInformation("GetByEmailAsync completed for {Email}", email);
         if (existingUser != null)
         {
+            _logger.LogWarning("User with email {Email} already exists", email);
             return Result.Fail("User with this email already exists.");
         }
 
+        _logger.LogInformation("Creating password hash for {Email}", email);
         var passwordHash = CreatePasswordHash(password);
         var user = new User(email, passwordHash, fullName);
 
+        _logger.LogInformation("Adding user to repository for {Email}", email);
         await _userRepository.AddAsync(user, cancellationToken);
+        _logger.LogInformation("Saving changes to unit of work after adding user for {Email}", email);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        _logger.LogInformation("Generating JWT and Refresh Token for {Email}", email);
         var token = GenerateJwtToken(user);
         var refreshToken = GenerateRefreshToken(ipAddress, user.Id);
 
+        _logger.LogInformation("Adding refresh token to repository for {Email}", email);
         await _refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
+        _logger.LogInformation("Saving changes to unit of work after adding refresh token for {Email}", email);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        _logger.LogInformation("RegisterAsync completed successfully for {Email}", email);
         return Result.Ok(new AuthResultDto
         {
             AccessToken = token,
             RefreshToken = refreshToken.Token,
-            User = new UserDto { Id = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role, IsPremium = user.IsPremium }
+            User = new UserDto { Id = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role, IsPremium = user.IsPremium, IsOnboarded = user.IsOnboarded }
         });
     }
 
@@ -105,7 +119,7 @@ public class AuthService : IAuthService
         {
             AccessToken = jwtToken,
             RefreshToken = newRefreshToken.Token,
-            User = new UserDto { Id = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role, IsPremium = user.IsPremium }
+            User = new UserDto { Id = user.Id, Email = user.Email, FullName = user.FullName, Role = user.Role, IsPremium = user.IsPremium, IsOnboarded = user.IsOnboarded }
         });
     }
 

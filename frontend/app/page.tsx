@@ -27,16 +27,15 @@ export default function LandingPage() {
     try {
       if (isRegisterMode) {
         await register(email, password, fullName);
-        // After register, you might want to auto-login or redirect. Assuming auto-login for now or asking to login.
-        // Assuming register doesn't auto-set tokens, let's login right after.
-        await login(email, password);
-        router.push("/onboarding");
+        // The register action now successfully sets tokens and the user state (with IsOnboarded=false)
+        router.push("/chat");
       } else {
         await login(email, password);
         router.push("/chat");
       }
       setIsLoginModalOpen(false);
     } catch (err: any) {
+      console.log(err);
       setError(err.response?.data?.errors?.join(", ") || "Xác thực thất bại. Vui lòng kiểm tra lại thông tin.");
     }
   };

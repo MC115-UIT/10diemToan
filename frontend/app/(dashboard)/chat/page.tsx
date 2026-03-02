@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { SendHorizontal } from "lucide-react";
-import api from "@/lib/api";
+import { createConversation } from "@/lib/chatApi";
 
 export default function NewChatPage() {
     const [input, setInput] = useState("");
@@ -16,14 +16,9 @@ export default function NewChatPage() {
 
         setIsLoading(true);
         try {
-            // Create a MathRequest/Conversation
-            // Note: currently the backend MathController takes ConversationId, but we might just pass empty/null for a new one.
-            // E.g.: SolveMathProblemCommand
-            const res = await api.post('/math/solve', { content: input });
-            // The backend needs to return the ConversationId so we can redirect to `/chat/${conversationId}`
-            // Assume backend is fixed to return { conversationId: "..." }
-            if (res.data?.conversationId) {
-                router.push(`/chat/${res.data.conversationId}`);
+            const res = await createConversation(input);
+            if (res.conversationId) {
+                router.push(`/chat/${res.conversationId}`);
             } else {
                 // Fallback if backend hasn't been updated to return conversation ID directly,
                 // We might just clear input and tell user to check sidebar (not ideal, but MVP)

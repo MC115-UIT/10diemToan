@@ -6,7 +6,7 @@ import { SendHorizontal } from "lucide-react";
 import { fetchConversationHistory } from "@/lib/chatApi";
 import { Conversation, MathRequest } from "@/types";
 import { useMathStream } from "@/hooks/useMathStream";
-import { useStreamJsonParser } from "@/hooks/useStreamJsonParser";
+import { parseStreamJson } from "@/hooks/useStreamJsonParser";
 
 export default function ChatPage() {
     const { id } = useParams();
@@ -24,13 +24,13 @@ export default function ChatPage() {
     const [userAnswers, setUserAnswers] = useState<{ [key: string]: string }>({});
     const [answerFeedback, setAnswerFeedback] = useState<{ [key: string]: 'correct' | 'wrong' | null }>({});
 
-    const { startStream, streamContent, isStreaming } = useMathStream();
+    const { startStream, resumeStream, streamContent, isStreaming } = useMathStream();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Parse live or historical JSON
     const getParsedJson = (req: MathRequest) => {
         if (req.status === "Processing" && isStreaming) {
-            return useStreamJsonParser(streamContent);
+            return parseStreamJson(streamContent);
         }
         if (req.response?.responseJson) {
             try { return JSON.parse(req.response.responseJson); } catch { return {}; }
@@ -72,9 +72,20 @@ export default function ChatPage() {
         try {
             const data = await fetchConversationHistory(convId);
             setConversation(data);
-            // Ensure backend returns something like { conversation, history: [...] } or just an array
-            // Let's assume it returns { id, title, mathRequests: [...] } based on domain
-            setHistory(data.mathRequests || []);
+
+            // Note: conversations/id API returns 'Requests' based on the backend DTO Controller
+            const mathRequests = data.requests || [];
+            setHistory(mathRequests);
+
+            // Resume stream if the last request is processing
+            if (mathRequests.length > 0) {
+                const lastReq = mathRequests[mathRequests.length - 1];
+                if (lastReq.status === "Processing") {
+                    resumeStream(lastReq.id, () => {
+                        loadHistory(convId);
+                    });
+                }
+            }
         } catch (err) {
             console.error(err);
         } finally {

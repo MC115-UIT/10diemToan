@@ -1,13 +1,16 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartExamTrainer.Api.Services;
 using SmartExamTrainer.Application.Features.Math.Commands.SolveMathProblem;
+using System.Security.Claims;
 using System.Text;
 
 namespace SmartExamTrainer.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class MathController : ControllerBase
 {
     private readonly IMediator _mediator;
@@ -22,6 +25,13 @@ public class MathController : ControllerBase
     [HttpPost("solve")]
     public async Task<IActionResult> Solve([FromBody] SolveMathProblemCommand command)
     {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (userIdString == null || !Guid.TryParse(userIdString, out var userId))
+        {
+            return Unauthorized();
+        }
+        
+        command.UserId = userId;
         var result = await _mediator.Send(command);
 
         if (result.IsFailed)

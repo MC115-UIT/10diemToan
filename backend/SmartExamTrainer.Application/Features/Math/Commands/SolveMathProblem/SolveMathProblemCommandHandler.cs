@@ -51,7 +51,7 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
 
         // 2. Resolve Conversation
         var conversationId = request.ConversationId;
-        if (conversationId == Guid.Empty)
+        if (conversationId == null || conversationId == Guid.Empty)
         {
             var newConversation = new Conversation(user.Id, "New Math Problem");
             await _conversationRepository.AddAsync(newConversation, cancellationToken);
@@ -59,14 +59,14 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
         }
 
         // 3. Create MathRequest Entity
-        var mathRequest = new MathRequest(conversationId, request.Content, request.ImageBase64);
+        var mathRequest = new MathRequest(conversationId.Value, request.Content, request.ImageBase64);
 
         // Save to DB
         await _mathRequestRepository.AddAsync(mathRequest, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         // Publish Event for worker to pick up
-        var correlationId = Guid.NewGuid(); // Or use a proper CorrelationID provider
+        var correlationId = mathRequest.Id; // Use MathRequestId to align with SSE frontend subscriber expectations
         var submittedEvent = new MathProblemSubmittedEvent(
             correlationId, 
             mathRequest.Id, 
@@ -76,7 +76,7 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
         
         await _eventBus.PublishAsync(submittedEvent, cancellationToken);
 
-        return Result.Ok(new SolveMathProblemResponse(mathRequest.Id, conversationId));
+        return Result.Ok(new SolveMathProblemResponse(mathRequest.Id, conversationId.Value));
     }
 }
 

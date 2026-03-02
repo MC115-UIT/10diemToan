@@ -6,9 +6,6 @@ public class SolveMathProblemCommandValidator : AbstractValidator<SolveMathProbl
 {
     public SolveMathProblemCommandValidator()
     {
-        RuleFor(x => x.ConversationId)
-            .NotEmpty().WithMessage("ConversationId is required.");
-
         RuleFor(x => x.Content)
             .NotEmpty().WithMessage("Math problem content is required.")
             .MaximumLength(2000).WithMessage("Math problem content is too long.");

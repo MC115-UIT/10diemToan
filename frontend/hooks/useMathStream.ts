@@ -58,6 +58,35 @@ export function useMathStream() {
         }
     }, []);
 
+    const resumeStream = useCallback((mathRequestId: string, onFinish?: () => void) => {
+        setIsStreaming(true);
+        setStreamContent("");
+
+        const streamUrl = `${api.defaults.baseURL}/math/stream/${mathRequestId}`;
+        const es = new EventSource(streamUrl, { withCredentials: true });
+        eventSourceRef.current = es;
+
+        es.onmessage = (event) => {
+            if (event.data === "[DONE]") {
+                es.close();
+                setIsStreaming(false);
+                eventSourceRef.current = null;
+                if (onFinish) onFinish();
+                return;
+            }
+
+            const token = event.data.replace(/\\n/g, '\n');
+            setStreamContent((prev) => prev + token);
+        };
+
+        es.onerror = (err) => {
+            console.error("SSE Error:", err);
+            es.close();
+            setIsStreaming(false);
+            eventSourceRef.current = null;
+        };
+    }, []);
+
     const stopStream = useCallback(() => {
         if (eventSourceRef.current) {
             eventSourceRef.current.close();
@@ -70,6 +99,7 @@ export function useMathStream() {
         isStreaming,
         streamContent,
         startStream,
+        resumeStream,
         stopStream
     };
 }

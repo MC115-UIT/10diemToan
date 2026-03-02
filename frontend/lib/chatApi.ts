@@ -6,9 +6,11 @@ export async function fetchConversations(): Promise<Conversation[]> {
     return res.data;
 }
 
-export async function createConversation(initialMessage: string): Promise<{ id: string }> {
+export async function createConversation(initialMessage: string): Promise<{ mathRequestId: string, conversationId: string }> {
     const res = await api.post('/math/solve', { content: initialMessage });
-    return res.data; // backend returning Result.Ok(mathRequest.Id) currently; we need the Conversation ID in reality to redirect, but for MVP we might just refresh list or adjust backend later.
+    // Backend returns SolveMathProblemResponse { MathRequestId, ConversationId }
+    // Axios usually keeps the casing unless configured otherwise, assuming camelCase from .NET JSON serializer.
+    return res.data;
 }
 
 export async function fetchConversationHistory(id: string) {
