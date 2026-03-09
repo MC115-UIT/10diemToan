@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <body
         className={`${ebGaramond.variable} ${playfairDisplay.variable} font-garamond bg-academic-paper text-academic-ink antialiased`}
       >

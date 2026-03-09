@@ -28,4 +28,9 @@ public class MathRequestRepository : IMathRequestRepository
     {
         _context.MathRequests.Update(request);
     }
+
+    public async Task AddResponseAsync(AIResponse response, CancellationToken cancellationToken = default)
+    {
+        await _context.AIResponses.AddAsync(response, cancellationToken);
+    }
 }

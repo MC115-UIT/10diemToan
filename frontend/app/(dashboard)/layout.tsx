@@ -7,6 +7,7 @@ import Link from "next/link";
 import { LogOut, MessageSquare, PlusCircle, Activity } from "lucide-react";
 import { fetchConversations } from "@/lib/chatApi";
 import { Conversation } from "@/types";
+import { ConversationItem } from "@/components/ConversationItem";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isInitialized, fetchAuthCheck, logout } = useAuthStore();
@@ -37,7 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }, [user, pathname]); // re-fetch when path changes (e.g. new chat created)
 
     if (!isInitialized || !user) {
-        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+        return <div className="flex h-screen items-center justify-center">Đang tải dữ liệu...</div>;
     }
 
     return (
@@ -66,17 +67,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         Lịch sử Tra Cứu
                     </div>
                     {conversations.map((conv) => (
-                        <Link
+                        <ConversationItem
                             key={conv.id}
-                            href={`/chat/${conv.id}`}
-                            className={`flex items-center gap-3 rounded-sm px-3 py-2 text-base transition-colors ${pathname.includes(conv.id)
-                                ? 'bg-[#F2EFE9] text-academic-accent font-bold border-l-2 border-academic-accent'
-                                : 'text-academic-neutral hover:bg-[#F2EFE9] border-l-2 border-transparent hover:text-academic-ink'
-                                }`}
-                        >
-                            <MessageSquare size={18} className="opacity-70" />
-                            <span className="truncate">{conv.title || "Giải Thuật Toán Học"}</span>
-                        </Link>
+                            conversation={conv}
+                            onUpdate={() => fetchConversations().then(setConversations).catch(console.error)}
+                        />
                     ))}
                     {conversations.length === 0 && (
                         <div className="text-base text-academic-neutral/60 px-2 flex justify-center py-4 italic">Chưa có dữ liệu tra cứu</div>

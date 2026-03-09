@@ -1,56 +1,37 @@
-export function parseStreamJson(rawString: string) {
-    if (!rawString) {
-        return {};
-    }
+const DELIMITER = "---DETAILED_JSON---";
 
-    try {
-        // Best effort direct parse first (if complete)
-        return JSON.parse(rawString);
-    } catch {
-        // It's incomplete, let's extract known blocks manually using Regex or iterative parsing
-        // This is a naive but fast progressive parser
-        const extractObject = (key: string) => {
-            const regex = new RegExp(`"${key}"\\s*:\\s*({[^}]*})`, 's');
-            const match = regex.exec(rawString);
-            if (match) {
-                try { return JSON.parse(match[1] + (match[1].endsWith('}') ? '' : '...}')); }
-                catch { /* swallow inner parse errors while streaming */ }
-            }
-            return null;
-        };
-
-        const extractArray = (key: string) => {
-            const regex = new RegExp(`"${key}"\\s*:\\s*(\\[.*?(?:\\]|$)`, 's');
-            const match = regex.exec(rawString);
-            if (match) {
-                try {
-                    // attempt to close the array if streaming stopped halfway
-                    let str = match[1];
-                    if (!str.endsWith(']')) str += ']';
-                    // also if last object is broken, we should ideally fix it but this is basic
-                    return JSON.parse(str);
-                }
-                catch { /* swallow */ }
-            }
-            return [];
-        };
-
-        const extractString = (key: string) => {
-            const regex = new RegExp(`"${key}"\\s*:\\s*"([^"]*)`, 's');
-            const match = regex.exec(rawString);
-            return match ? match[1] : "";
-        };
-
+/**
+ * Splits the raw accumulated stream string into two parts:
+ * - textPart: Plain Vietnamese text for immediate display.
+ * - jsonPart: The structured JSON block for the "View Detail" analysis panel.
+ * - hasDelimiter: Whether the delimiter has been streamed yet.
+ */
+export function splitStreamContent(rawString: string) {
+    const delimiterIndex = rawString.indexOf(DELIMITER);
+    if (delimiterIndex === -1) {
         return {
-            interpretation: extractObject("interpretation") || {},
-            nature_analysis: extractObject("nature_analysis") || {},
-            concept_foundation: extractArray("concept_foundation") || [],
-            solution_steps: extractArray("solution_steps") || [],
-            final_answer: extractString("final_answer"),
-            common_traps: extractArray("common_traps") || [],
-            variants: extractArray("variants") || [],
-            key_takeaway: extractString("key_takeaway"),
-            error_note: extractString("error_note"),
+            textPart: rawString,
+            jsonPart: "",
+            hasDelimiter: false,
         };
+    }
+    return {
+        textPart: rawString.substring(0, delimiterIndex).trim(),
+        jsonPart: rawString.substring(delimiterIndex + DELIMITER.length).trim(),
+        hasDelimiter: true,
+    };
+}
+
+/**
+ * Parses the JSON part of the response. This should only be called when the full
+ * response is available (e.g., from the DB after streaming is complete or when
+ * the user clicks "View Detail").
+ */
+export function parseDetailJson(jsonString: string) {
+    if (!jsonString) return null;
+    try {
+        return JSON.parse(jsonString);
+    } catch {
+        return null;
     }
 }

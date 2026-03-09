@@ -1,0 +1,36 @@
+name: Backend CI (.NET)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  build:
+    name: Build & Test .NET API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x' # Update to match your target framework
+        
+    - name: Restore dependencies
+      run: dotnet restore SmartExamTrainer.sln
+      
+    - name: Build
+      run: dotnet build SmartExamTrainer.sln --no-restore -c Release
+      
+    - name: Test
+      run: dotnet test SmartExamTrainer.sln --no-build --verbosity normal

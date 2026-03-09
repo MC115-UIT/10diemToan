@@ -25,6 +25,7 @@ export interface MathRequest {
     imageBase64?: string | null;
     latexContent: string;
     status: string;
+    isMastered?: boolean;
     createdAt: string;
     response: AIResponse | null;
 }

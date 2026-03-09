@@ -33,6 +33,8 @@ public class AIResponseCompletedConsumer : IConsumer<AIResponseCompletedEvent>
             response.AppendContent(e.FinalResponseJson);
             response.UpdateTokenUsage(e.PromptTokens, e.CompletionTokens);
             
+            await _mathRequestRepository.AddResponseAsync(response, context.CancellationToken);
+
             request.MarkAsCompleted();
             request.SetResponse(response);
         }

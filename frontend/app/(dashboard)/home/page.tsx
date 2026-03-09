@@ -112,18 +112,18 @@ export default function DashboardHomePage() {
                                 </div>
                             </div>
                         </div>
-                        <div className="mt-8 pt-4 border-t border-academic-border border-dashed font-bold font-sans uppercase text-xs tracking-widest text-academic-accent hover:text-academic-ink transition-colors">Vào Thư Quyển →</div>
+                        <Link href="/notebook" className="mt-8 pt-4 border-t border-academic-border border-dashed font-bold font-sans uppercase text-xs tracking-widest text-academic-accent hover:text-academic-ink transition-colors block text-left w-full">Vào Thư Quyển →</Link>
                     </div>
 
                     {/* Quick Access */}
                     <div className="space-y-4">
-                        <div className="bg-white border text-academic-ink border-academic-border p-6 flex items-center gap-5 hover:bg-[#FDFBF7] cursor-pointer shadow-sm group">
+                        <Link href="/notebook" className="bg-white border text-academic-ink border-academic-border p-6 flex items-center gap-5 hover:bg-[#FDFBF7] cursor-pointer shadow-sm group block w-full">
                             <div className="border border-academic-border bg-academic-paper text-academic-accent p-3 group-hover:bg-academic-accent group-hover:text-white transition-colors"><BookOpen size={24} /></div>
                             <div>
                                 <h4 className="font-bold font-playfair text-xl">Sổ tay Lỗi sai</h4>
                                 <p className="text-base text-academic-neutral italic line-clamp-1">Xem lại 12 ngộ nhận phổ biến.</p>
                             </div>
-                        </div>
+                        </Link>
                         <div className="bg-white border text-academic-ink border-academic-border p-6 flex items-center gap-5 hover:bg-[#FDFBF7] cursor-pointer shadow-sm group">
                             <div className="border border-academic-border bg-academic-paper text-academic-accent p-3 group-hover:bg-academic-accent group-hover:text-white transition-colors"><Activity size={24} /></div>
                             <div>
@@ -135,7 +135,7 @@ export default function DashboardHomePage() {
                             <div className="border border-academic-border bg-academic-paper text-academic-accent p-3 group-hover:bg-academic-accent group-hover:text-white transition-colors"><Clock size={24} /></div>
                             <div>
                                 <h4 className="font-bold font-playfair text-xl">Thư Viện Tra Cứu</h4>
-                                <p className="text-base text-academic-neutral italic line-clamp-1">Xem lại các bài toán lịch sử.</p>
+                                <p className="text-base text-academic-neutral italic line-clamp-1">Xem lại lịch sử các bài đã giải.</p>
                             </div>
                         </div>
                     </div>

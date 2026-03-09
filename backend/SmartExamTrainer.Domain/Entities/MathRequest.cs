@@ -11,6 +11,7 @@ public class MathRequest : BaseEntity
     public string? ImageBase64 { get; private set; }
     public string LatexContent { get; private set; } = string.Empty;
     public string Status { get; private set; } = "Pending"; // Pending, Processing, Completed, Failed
+    public bool IsMastered { get; private set; } = false;
 
     public AIResponse? Response { get; private set; }
 
@@ -44,5 +45,11 @@ public class MathRequest : BaseEntity
     public void SetResponse(AIResponse response)
     {
         Response = response;
+    }
+
+    public void ToggleMastered()
+    {
+        IsMastered = !IsMastered;
+        UpdatedAt = DateTime.UtcNow;
     }
 }

@@ -1,6 +1,9 @@
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartExamTrainer.Application.Interfaces.Repositories;
+using SmartExamTrainer.Application.Features.Conversations.Commands.RenameConversation;
+using SmartExamTrainer.Application.Features.Conversations.Commands.DeleteConversation;
 using SmartExamTrainer.Domain.Entities;
 using System.Security.Claims;
 
@@ -12,10 +15,48 @@ namespace SmartExamTrainer.Api.Controllers;
 public class ConversationsController : ControllerBase
 {
     private readonly IConversationRepository _conversationRepository;
+    private readonly IMediator _mediator;
 
-    public ConversationsController(IConversationRepository conversationRepository)
+    public ConversationsController(IConversationRepository conversationRepository, IMediator mediator)
     {
         _conversationRepository = conversationRepository;
+        _mediator = mediator;
+    }
+
+    [HttpPut("{id}/rename")]
+    public async Task<IActionResult> RenameConversation(Guid id, [FromBody] RenameRequest request, CancellationToken cancellationToken)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdString, out var userId))
+            return Unauthorized();
+
+        var command = new RenameConversationCommand(id, userId, request.NewTitle);
+        var result = await _mediator.Send(command, cancellationToken);
+        
+        if (result.IsFailed)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return Ok();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteConversation(Guid id, CancellationToken cancellationToken)
+    {
+        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdString, out var userId))
+            return Unauthorized();
+
+        var command = new DeleteConversationCommand(id, userId);
+        var result = await _mediator.Send(command, cancellationToken);
+        
+        if (result.IsFailed)
+        {
+            return BadRequest(result.Errors);
+        }
+
+        return NoContent();
     }
 
     [HttpGet]
@@ -61,6 +102,7 @@ public class ConversationsController : ControllerBase
                 r.Content,
                 r.LatexContent,
                 r.Status,
+                r.IsMastered,
                 r.CreatedAt,
                 Response = r.Response != null ? new
                 {
@@ -75,4 +117,9 @@ public class ConversationsController : ControllerBase
 
         return Ok(dto);
     }
+}
+
+public class RenameRequest
+{
+    public string NewTitle { get; set; } = string.Empty;
 }

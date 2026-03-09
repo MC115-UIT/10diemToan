@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
     public DbSet<AIResponse> AIResponses => Set<AIResponse>();
     public DbSet<LLMTokenUsage> LLMTokenUsages => Set<LLMTokenUsage>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<NotebookEntry> NotebookEntries => Set<NotebookEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -29,6 +30,22 @@ public class ApplicationDbContext : DbContext, IUnitOfWork
             .HasOne(a => a.Request)
             .WithOne(m => m.Response)
             .HasForeignKey<AIResponse>(a => a.MathRequestId);
+
+        modelBuilder.Entity<NotebookEntry>()
+            .HasOne(n => n.User)
+            .WithMany()
+            .HasForeignKey(n => n.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<NotebookEntry>()
+            .HasOne(n => n.Request)
+            .WithMany()
+            .HasForeignKey(n => n.MathRequestId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<NotebookEntry>()
+            .HasIndex(n => new { n.UserId, n.MathRequestId })
+            .IsUnique();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

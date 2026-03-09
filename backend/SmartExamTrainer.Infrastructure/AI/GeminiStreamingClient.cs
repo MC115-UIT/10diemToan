@@ -18,8 +18,8 @@ public class GeminiStreamingClient : IAIStreamingClient
         _httpClient = httpClient;
         _apiKey = configuration["Gemini:ApiKey"] ?? string.Empty;
         
-        // Default to newest pro model if unspecified
-        _model = configuration["Gemini:Model"] ?? "gemini-1.5-pro";
+        // Default to newest flash model if unspecified
+        _model = configuration["Gemini:Model"] ?? "gemini-2.5-flash";
     }
 
     public async IAsyncEnumerable<string> StreamTextAsync(string prompt, string? imageBase64 = null, [EnumeratorCancellation] CancellationToken cancellationToken = default)

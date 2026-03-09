@@ -16,4 +16,10 @@ public class Conversation : BaseEntity
         UserId = userId;
         Title = title;
     }
+
+    public void Rename(string newTitle)
+    {
+        Title = newTitle;
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

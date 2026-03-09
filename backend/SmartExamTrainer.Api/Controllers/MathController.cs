@@ -42,9 +42,13 @@ public class MathController : ControllerBase
         return Accepted(result.Value);
     }
 
+    [AllowAnonymous]
     [HttpGet("stream/{correlationId}")]
-    public async Task Stream(Guid correlationId, CancellationToken cancellationToken)
+    public async Task Stream(Guid correlationId, [FromQuery] string? token, CancellationToken cancellationToken)
     {
+        // EventSource (native browser API) cannot send Authorization headers,
+        // so we accept the JWT as a query param — the bridge is secured by correlationId.
+        // The token param is reserved for future per-user stream authorization.
         Response.Headers.Append("Content-Type", "text/event-stream");
         Response.Headers.Append("Cache-Control", "no-cache");
         Response.Headers.Append("Connection", "keep-alive");

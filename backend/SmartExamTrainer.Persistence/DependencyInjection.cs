@@ -24,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IConversationRepository, ConversationRepository>();
         services.AddScoped<ILLMTokenUsageRepository, LLMTokenUsageRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<INotebookRepository, NotebookRepository>();
 
         return services;
     }

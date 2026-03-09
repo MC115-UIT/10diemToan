@@ -24,7 +24,7 @@ public class MathProblemSubmittedConsumer : IConsumer<MathProblemSubmittedEvent>
         int completionTokens = 0;
         
         // Example: We start receiving tokens and push them out so the API SSE endpoint can stream them
-        await foreach(var token in _mathSolverService.SolveAsync(message.MathContent, message.ImageBase64, context.CancellationToken))
+        await foreach(var token in _mathSolverService.SolveAsync(message.MathContent, message.ImageBase64, message.Grade, message.TargetExams, message.SelfAssessmentLevel, context.CancellationToken))
         {
             fullResponseBuilder.Append(token);
             completionTokens += token.Length / 4; // naive estimation per chunk

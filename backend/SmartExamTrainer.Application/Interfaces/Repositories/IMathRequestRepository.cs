@@ -7,4 +7,5 @@ public interface IMathRequestRepository
     Task<MathRequest?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task AddAsync(MathRequest request, CancellationToken cancellationToken = default);
     void Update(MathRequest request);
+    Task AddResponseAsync(AIResponse response, CancellationToken cancellationToken = default);
 }

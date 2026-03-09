@@ -4,6 +4,7 @@ using SmartExamTrainer.Domain.Entities;
 using SmartExamTrainer.Domain.Events;
 using SmartExamTrainer.Shared.CQRS;
 using SmartExamTrainer.Shared.Events;
+using Microsoft.Extensions.Logging;
 
 namespace SmartExamTrainer.Application.Features.Math.Commands.SolveMathProblem;
 
@@ -15,6 +16,7 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
     private readonly IConversationRepository _conversationRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventBus _eventBus;
+    private readonly ILogger<SolveMathProblemCommandHandler> _logger;
 
     public SolveMathProblemCommandHandler(
         IMathRequestRepository mathRequestRepository,
@@ -22,7 +24,8 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
         IUserRepository userRepository,
         IConversationRepository conversationRepository,
         IUnitOfWork unitOfWork,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        ILogger<SolveMathProblemCommandHandler> logger)
     {
         _mathRequestRepository = mathRequestRepository;
         _llmTokenUsageRepository = llmTokenUsageRepository;
@@ -30,21 +33,29 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
         _conversationRepository = conversationRepository;
         _unitOfWork = unitOfWork;
         _eventBus = eventBus;
+        _logger = logger;
     }
 
     public async Task<Result<SolveMathProblemResponse>> Handle(SolveMathProblemCommand request, CancellationToken cancellationToken)
     {
+        _logger.LogInformation("Handling SolveMathProblemCommand for user: {UserId}, content length: {Length}", request.UserId, request.Content?.Length ?? 0);
+        
         // 1. LLM Gate Check
         var user = await _userRepository.GetByIdAsync(request.UserId, cancellationToken);
-        if (user == null) return Result.Fail("User not found.");
+        if (user == null) 
+        {
+            _logger.LogWarning("User {UserId} not found.", request.UserId);
+            return Result.Fail("User not found.");
+        }
 
         if (!user.IsPremium)
         {
             var dailyTokens = await _llmTokenUsageRepository.GetDailyTokensUsedAsync(user.Id, DateTime.UtcNow.Date, cancellationToken);
-            var freeTierDailyLimit = 10000;
+            var freeTierDailyLimit = 100000; // Increased for testing
 
             if (dailyTokens >= freeTierDailyLimit)
             {
+                _logger.LogWarning("User {UserId} hit daily token limit: {Used}/{Limit}", user.Id, dailyTokens, freeTierDailyLimit);
                 return Result.Fail("Daily free token limit reached. Please upgrade to Premium or try again tomorrow.");
             }
         }
@@ -59,7 +70,7 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
         }
 
         // 3. Create MathRequest Entity
-        var mathRequest = new MathRequest(conversationId.Value, request.Content, request.ImageBase64);
+        var mathRequest = new MathRequest(conversationId.Value, request.Content ?? "Analyze problem", request.ImageBase64);
 
         // Save to DB
         await _mathRequestRepository.AddAsync(mathRequest, cancellationToken);
@@ -72,7 +83,10 @@ public class SolveMathProblemCommandHandler : ICommandHandler<SolveMathProblemCo
             mathRequest.Id, 
             request.UserId, 
             mathRequest.Content, 
-            request.ImageBase64);
+            request.ImageBase64,
+            user.Grade,
+            user.TargetExams,
+            user.SelfAssessmentLevel);
         
         await _eventBus.PublishAsync(submittedEvent, cancellationToken);
 

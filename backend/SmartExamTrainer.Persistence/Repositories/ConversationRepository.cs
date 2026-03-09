@@ -40,4 +40,14 @@ public class ConversationRepository : IConversationRepository
             .ThenInclude(r => r.Response)
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
+
+    public void Update(Conversation conversation)
+    {
+        _context.Conversations.Update(conversation);
+    }
+
+    public void Remove(Conversation conversation)
+    {
+        _context.Conversations.Remove(conversation);
+    }
 }
